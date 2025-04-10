@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"time"
+
+	matrix "github.com/amirtahajavadi/strassen/Matrix"
 )
 
 func add(a, b [][]int) [][]int {
@@ -118,7 +120,8 @@ func strassenMultiply(a, b [][]int) [][]int {
 	return result
 }
 func main() {
-
+	c := matrix.CreateMatrix(5)
+	c.PrintMatrix()
 	for j := 1; j <= 25; j++ {
 		a := MakeMatrix(j)
 		b := MakeMatrix(j)
@@ -136,5 +139,4 @@ func main() {
 		}
 		fmt.Println(time.Since(start2))
 	}
-
 }
