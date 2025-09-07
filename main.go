@@ -3,8 +3,14 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"log"
 	"os"
 	"time"
+
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/plotutil"
+	"gonum.org/v1/plot/vg"
 )
 
 func makeRow(s int) []int {
@@ -24,6 +30,43 @@ func makeMatrix(s int) [][]int {
 		m[i] = row
 	}
 	return m
+}
+
+func drawPlot(nValues []float64, standardTimes []float64, strassenTimes []float64) {
+
+	// Convert slices into XY points
+	var standardPts, strassenPts plotter.XYs
+	for i := range nValues {
+		standardPts = append(standardPts, plotter.XY{
+			X: nValues[i],
+			Y: standardTimes[i],
+		})
+		strassenPts = append(strassenPts, plotter.XY{
+			X: nValues[i],
+			Y: strassenTimes[i],
+		})
+	}
+
+	// Create plot
+	p := plot.New()
+	p.Title.Text = "Matrix Multiplication Timings"
+	p.X.Label.Text = "Matrix size n"
+	p.Y.Label.Text = "Time (ms)"
+
+	// Add both lines
+	err := plotutil.AddLinePoints(p,
+		"Standard O(n^3)", standardPts,
+		"Strassen", strassenPts,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Save as PNG
+	if err := p.Save(6*vg.Inch, 4*vg.Inch, "timings.png"); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Plot saved as timings.png")
 }
 
 func add(a, b [][]int) [][]int {
@@ -180,7 +223,12 @@ func main() {
 	w := csv.NewWriter(f)
 	defer w.Flush()
 	w.Write([]string{"n", "standard_ms", "strassen_ms"})
-
+	nValues := make([]float64, len(sizes))
+	for i, v := range sizes {
+		nValues[i] = float64(v)
+	}
+	standardTimes := []float64{}
+	strassenTimes := []float64{}
 	for _, n := range sizes {
 		a := makeMatrix(n)
 		b := makeMatrix(n)
@@ -193,7 +241,8 @@ func main() {
 
 		stdMs := float64(t1.Sub(t0).Microseconds()) / 1000.0
 		strMs := float64(t2.Sub(t1).Microseconds()) / 1000.0
-
+		standardTimes = append(standardTimes, stdMs)
+		strassenTimes = append(strassenTimes, strMs)
 		fmt.Printf("n=%d  standard=%0.3f ms  strassen=%0.3f ms\n", n, stdMs, strMs)
 		w.Write([]string{
 			fmt.Sprint(n),
@@ -201,4 +250,5 @@ func main() {
 			fmt.Sprintf("%.3f", strMs),
 		})
 	}
+	drawPlot(nValues, standardTimes, strassenTimes)
 }
