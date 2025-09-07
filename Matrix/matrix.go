@@ -7,25 +7,27 @@ type Matrix struct {
 }
 
 func MakeRow(s int) []int {
-	var row []int
-	for k := 1; k < s+1; k++ {
-		row = append(row, k)
+	row := make([]int, s)
+	for k := 0; k < s; k++ {
+		row[k] = k + 1
 	}
 	return row
 }
 
 func CreateMatrix(size int) Matrix {
-	var matrix [][]int
+	matrix := make([][]int, size)
 	row := MakeRow(size)
 	for k := 0; k < size; k++ {
-		matrix = append(matrix, row)
+		newRow := make([]int, size)
+		copy(newRow, row)
+		matrix[k] = newRow
 	}
 	return Matrix{data: matrix}
 }
 
-func add(a, b Matrix) Matrix {
+func Add(a, b Matrix) Matrix {
 	n := len(a.data)
-	result := Matrix{}
+	result := Matrix{data: make([][]int, n)}
 	for i := 0; i < n; i++ {
 		result.data[i] = make([]int, n)
 		for j := 0; j < n; j++ {
@@ -35,10 +37,9 @@ func add(a, b Matrix) Matrix {
 	return result
 }
 
-// Subtract two matrices
-func subtract(a, b Matrix) Matrix {
+func Subtract(a, b Matrix) Matrix {
 	n := len(a.data)
-	result := Matrix{}
+	result := Matrix{data: make([][]int, n)}
 	for i := 0; i < n; i++ {
 		result.data[i] = make([]int, n)
 		for j := 0; j < n; j++ {
@@ -47,6 +48,8 @@ func subtract(a, b Matrix) Matrix {
 	}
 	return result
 }
+
+func (m *Matrix) Data() [][]int { return m.data }
 
 func (m *Matrix) PrintMatrix() {
 	for i := range m.data {
